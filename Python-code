@@ -1,28 +1,26 @@
 import cv2
+import os
 
-import numpy as np
+mainFolder = 'Images'
+myFolders = os.listdir(mainFolder)
+print(myFolders)
 
-img_ = cv2.imread('2.jpg')
-# img_ = cv2.imread('original_image_left.jpg')
-# img_ = cv2.resize(img_, (0,0), fx=1, fy=1)
-img1 = cv2.cvtColor(img_, cv2.COLOR_BGR2GRAY)
+for folder in myFolders:
+    path = mainFolder + '/' + folder
+    print(path)
+    images = []
+    myList = os.listdir(path)
+    print(f'Total no of images detected {len(myList)}')
+    for imgN in myList:
+        curImg = cv2.imread(f'{path}/{imgN}')
+        curImg = cv2.resize(curImg,(0,0),None,0.2,0.2)
+        images.append(curImg)
 
-img = cv2.imread('1.jpg')
-# img = cv2.imread('original_image_right.jpg')
-# img = cv2.resize(img, (0,0), fx=1, fy=1)
-img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-orb = cv2.ORB_create()
-kp1, des1 = orb.detectAndCompute(img1, None)
-kp2, des2 = orb.detectAndCompute(img2, None)
-
-bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-matches = bf.match(des1, des2)
-matches = sorted(matches, key=lambda x: x.distance)
-
-result = cv2.drawMatches(img1, kp1, img2, kp2, matches[:20], None, matchColor=(255, 255, 0), singlePointColor=(255, 0, 255),flags=0)
-
-cv2.imshow("original_image_drawMatches.jpg", result)
-
-cv2.waitKey(0)
-
+    stitcher = cv2.Stitcher.create()
+    (status,result) = stitcher.stitch(images)
+    if (status == cv2.Stitcher_OK):
+        print('Panorama generated')
+        cv2.imshow(folder,result)
+        cv2.waitKey(0)
+    else:
+        print('Panorama Generation Unsuccessful')
