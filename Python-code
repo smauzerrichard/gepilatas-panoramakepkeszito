@@ -13,7 +13,7 @@ for folder in myFolders:
     print(f'Total no of images detected {len(myList)}')
     for imgN in myList:
         curImg = cv2.imread(f'{path}/{imgN}')
-        curImg = cv2.resize(curImg,(0,0),None,0.2,0.2)
+        curImg = cv2.resize(curImg,(0,0),None,0.3,0.3)
         images.append(curImg)
 
     stitcher = cv2.Stitcher.create()
