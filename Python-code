@@ -20,7 +20,9 @@ for folder in myFolders:
     (status,result) = stitcher.stitch(images)
     if (status == cv2.Stitcher_OK):
         print('Panorama generated')
+        out = mainFolder+"/"+folder +"/"+ "resault.jpg"
         cv2.imshow(folder,result)
+        cv2.imwrite(out,result)
         cv2.waitKey(0)
     else:
         print('Panorama Generation Unsuccessful')
