@@ -1,28 +1,147 @@
 import cv2
 import os
+import shutil
+
 
 mainFolder = 'Images'
 myFolders = os.listdir(mainFolder)
 print(myFolders)
 
 for folder in myFolders:
+    path= "C:/Users/smauz/Desktop/Panoramakep/Images/"+ folder +"/Cutted_images"
+    if os.path.exists(path):
+        shutil.rmtree(path)
+        
+    path = mainFolder + '/' + folder +'/Panorama.jpg'
+    if os.path.exists(path):
+        os.remove(path)
+#-------------------------
+        
+#végigiterál a mappákon
+        
+for folder in myFolders:
+    
     path = mainFolder + '/' + folder
     print(path)
+    
     images = []
+   
     myList = os.listdir(path)
     print(f'Total no of images detected {len(myList)}')
-    for imgN in myList:
-        curImg = cv2.imread(f'{path}/{imgN}')
-        curImg = cv2.resize(curImg,(0,0),None,0.3,0.3)
-        images.append(curImg)
+    
+    if (len(myList)==1):
+        input=os.listdir("C:/Users/smauz/Desktop/Panoramakep/Images/"+folder)
+        
+        newDir="Cutted_images"
+        
+        
+        os.mkdir("C:/Users/smauz/Desktop/Panoramakep/Images/"+folder+"/"+newDir)
+        
+        
 
+        image=cv2.imread("C:/Users/smauz/Desktop/Panoramakep/Images/"+folder+"/"+input[0])
+        
+        #-----------------------------
+        
+        #0 átmenettel
+        #cropped1 = image[0: int(image.shape[0]), 0:int(image.shape[1]/2)]
+        #cropped2 = image[0: int(image.shape[0]), int(image.shape[1]/2):int(image.shape[1])]
+        
+        
+        #out = "C:/Users/smauz/Desktop/Panoramakep/Images/"+folder+"/"+newDir+"/test1.jpg"
+        #out1 = "C:/Users/smauz/Desktop/Panoramakep/Images/"+folder +"/"+newDir+"/test2.jpg"  
+        #cv2.imwrite(out,cropped1)
+        #cv2.imwrite(out1,cropped2)
+        #cv2.waitKey(0)
+        
+        #-----------------------------
+        
+        #1/5 átmenet ezt az értéket a tesztek során növelni ill. csökkenteni fogjuk
+        #képek 2 vágása
+        cropped1 = image[0: int(image.shape[0]), 0:int(image.shape[1]/2+image.shape[1]/5)]     
+        cropped2 = image[0: int(image.shape[0]), int(image.shape[1]/2-image.shape[1]/5):int(image.shape[1])]
+        
+        #--------------------------
+        
+        
+        out = "C:/Users/smauz/Desktop/Panoramakep/Images/"+folder+"/"+newDir+"/test1.jpg"
+        out1 = "C:/Users/smauz/Desktop/Panoramakep/Images/"+folder +"/"+newDir+"/test2.jpg"   
+        cv2.imwrite(out,cropped1)
+        cv2.imwrite(out1,cropped2)
+        cv2.waitKey(0)
+        
+    #--------------------------------
+    
+    for imgN in myList:
+        
+        curImg = cv2.imread(f'{path}/{imgN}')
+        print(f'{path}/{imgN}')
+        
+        newValue=1200
+
+        if(curImg.shape[0]>curImg.shape[1]):
+            curImg=cv2.resize(curImg, (int((newValue/curImg.shape[0])*curImg.shape[1]), newValue))
+        else:
+            curImg=cv2.resize(curImg, (newValue, int((newValue / curImg.shape[1]) * curImg.shape[0])))
+        
+        images.append(curImg)
+        
+   
     stitcher = cv2.Stitcher.create()
     (status,result) = stitcher.stitch(images)
     if (status == cv2.Stitcher_OK):
         print('Panorama generated')
-        out = mainFolder+"/"+folder +"/"+ "resault.jpg"
+        out = mainFolder+"/"+folder +"/"+ "Panorama.jpg"
         cv2.imshow(folder,result)
         cv2.imwrite(out,result)
         cv2.waitKey(0)
     else:
         print('Panorama Generation Unsuccessful')
+
+    #-------------------------
+
+
+
+for folder in myFolders:
+    path= "C:/Users/smauz/Desktop/Panoramakep/Images/"+ folder +"/Cutted_images"
+    images = []
+    
+    if os.path.exists(path):
+        myList = os.listdir(path)
+        print(f'Total no of images detected {len(myList)}')
+       
+        for imgN in myList:
+            curImg = cv2.imread(f'{path}/{imgN}')
+            print(f'{path}/{imgN}')
+            newValue=1200
+            if(curImg.shape[0]>curImg.shape[1]):
+                curImg=cv2.resize(curImg, (int((newValue/curImg.shape[0])*curImg.shape[1]), newValue))
+            else:
+                curImg=cv2.resize(curImg, (newValue, int((newValue / curImg.shape[1]) * curImg.shape[0])))
+            images.append(curImg)
+    
+        stitcher = cv2.Stitcher.create()
+        (status,result) = stitcher.stitch(images)
+        
+        if (status == cv2.Stitcher_OK):
+            
+            out = "C:/Users/smauz/Desktop/Panoramakep/Images/"+folder +"/"+ "Panorama.jpg"
+            cv2.imshow(folder,result)
+            cv2.imwrite(out,result)
+            input=os.listdir("C:/Users/smauz/Desktop/Panoramakep/Images/"+folder)
+            print(input)
+            size=cv2.imread("C:/Users/smauz/Desktop/Panoramakep/Images/"+ folder+ "/"+input[2])
+            size=cv2.resize(size,(result.shape[1],result.shape[0]))
+
+            match=cv2.matchTemplate(result, size, cv2.TM_CCOEFF_NORMED)
+            if match < 0:
+                match*=-1
+                
+            print('Panorama generated and the matching between the original and the generated pictures: '+ str(round(match[0][0]*100))+'%!!!!!')
+            cv2.waitKey(0)
+        else:
+            print('Panorama Generation Unsuccessful')
+            
+   
+    else:
+        continue
